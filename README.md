@@ -8,8 +8,5 @@ The images are designed to be flexible, supporting various CPU architectures and
 
 ## Features
 
--   **Multi-Platform Support**: Built for `linux/amd64`, `windows/amd64`, `darwin/amd64`, and `darwin/aarch64`.
+-   **Multi-Platform Support**: Built for `linux/amd64`, `darwin/amd64`, and `darwin/aarch64`.
 -   **Multi-JDK Support**: Images are available for JDK 8 and JDK 17.
--   **Automated Builds**: Uses GitHub Actions to automatically build and push images to Docker Hub.
--   **Customizable Builds**: The GitHub Actions workflow allows you to manually select the `mvnd` version and specific platforms you wish to build.
-

@@ -22,16 +22,6 @@ on:
         required: false
         type: boolean
         default: false
-      windows_amd64_jdk8:
-        description: 'windows/amd64 with JDK8'
-        required: false
-        type: boolean
-        default: false
-      windows_amd64_jdk17:
-        description: 'windows/amd64 with JDK17'
-        required: false
-        type: boolean
-        default: false
       darwin_amd64_jdk8:
         description: 'darwin/amd64 with JDK8'
         required: false
@@ -78,29 +68,6 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-  build-windows-amd64-jdk8:
-    if: inputs.all_platforms || inputs.windows_amd64_jdk8
-    uses: ./.github/workflows/docker-build.yml
-    with:
-      platform: windows/amd64
-      jdk: jdk8
-      mvnd_version: ${{ inputs.mvnd_version }}
-      base_image: eclipse-temurin:8-jdk-windowsservercore-ltsc2022
-    secrets:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-  build-windows-amd64-jdk17:
-    if: inputs.all_platforms || inputs.windows_amd64_jdk17
-    uses: ./.github/workflows/docker-build.yml
-    with:
-      platform: windows/amd64
-      jdk: jdk17
-      mvnd_version: ${{ inputs.mvnd_version }}
-      base_image: eclipse-temurin:17-jdk-windowsservercore-ltsc2022
-    secrets:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-darwin-amd64-jdk8:
     if: inputs.all_platforms || inputs.darwin_amd64_jdk8
