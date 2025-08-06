@@ -93,7 +93,7 @@ jobs:
           file: ./Dockerfile
           platforms: ${{ steps.parse_info.outputs.platform_arch }}
           push: true
-          tags: power4j/mvnd:${{ inputs.mvnd_version }}-${{ steps.parse_info.outputs.tag_info }}
+          tags: power4j/mvnd:${{ inputs.mvnd_version }}-${{ steps.parse_info.outputs.jdk_version }}-${{ steps.parse_info.outputs.tag_info }}
           build-args: |
             MVND_URL=${{ steps.parse_info.outputs.mvnd_url }}
             BASE_IMAGE=${{ inputs.base_image }} 
