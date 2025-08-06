@@ -1,9 +1,10 @@
+ARG BASE_IMAGE
+ARG ALPINE_CN
+
 FROM alpine:3.15.0
 
 LABEL maintainer="https://github.com/power4j/mvnd-docker"
 
-ARG BASE_IMAGE
-ARG ALPINE_CN
 
 RUN if [[ "${ALPINE_CN}" = "true" ]] ; then \
     sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories ; \
