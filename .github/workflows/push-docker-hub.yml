@@ -7,16 +7,21 @@ on:
         description: 'version to build (see releases: https://github.com/apache/maven-mvnd/releases)'
         required: true
         default: 'latest'
+      all_platforms:
+        description: 'Select all supported platforms and JDK versions'
+        required: false
+        type: boolean
+        default: false
       linux_amd64_jdk8:
         description: 'Build for linux/amd64 with JDK8'
         required: false
         type: boolean
-        default: true
+        default: false
       linux_amd64_jdk17:
         description: 'Build for linux/amd64 with JDK17'
         required: false
         type: boolean
-        default: true
+        default: false
       windows_amd64_jdk8:
         description: 'Build for windows/amd64 with JDK8'
         required: false
@@ -55,24 +60,25 @@ jobs:
       contents: read
       packages: write
       id-token: write
+    
     strategy:
       matrix:
         include:
-          - if: ${{ inputs.linux_amd64_jdk8 }}
+          - if: ${{ inputs.all_platforms || inputs.linux_amd64_jdk8 }}
             platform_info: 'linux/amd64-jdk8'
-          - if: ${{ inputs.linux_amd64_jdk17 }}
+          - if: ${{ inputs.all_platforms || inputs.linux_amd64_jdk17 }}
             platform_info: 'linux/amd64-jdk17'
-          - if: ${{ inputs.windows_amd64_jdk8 }}
+          - if: ${{ inputs.all_platforms || inputs.windows_amd64_jdk8 }}
             platform_info: 'windows/amd64-jdk8'
-          - if: ${{ inputs.windows_amd64_jdk17 }}
+          - if: ${{ inputs.all_platforms || inputs.windows_amd64_jdk17 }}
             platform_info: 'windows/amd64-jdk17'
-          - if: ${{ inputs.darwin_amd64_jdk8 }}
+          - if: ${{ inputs.all_platforms || inputs.darwin_amd64_jdk8 }}
             platform_info: 'darwin/amd64-jdk8'
-          - if: ${{ inputs.darwin_amd64_jdk17 }}
+          - if: ${{ inputs.all_platforms || inputs.darwin_amd64_jdk17 }}
             platform_info: 'darwin/amd64-jdk17'
-          - if: ${{ inputs.darwin_aarch64_jdk8 }}
+          - if: ${{ inputs.all_platforms || inputs.darwin_aarch64_jdk8 }}
             platform_info: 'darwin/aarch64-jdk8'
-          - if: ${{ inputs.darwin_aarch64_jdk17 }}
+          - if: ${{ inputs.all_platforms || inputs.darwin_aarch64_jdk17 }}
             platform_info: 'darwin/aarch64-jdk17'
       fail-fast: false
     
@@ -100,11 +106,13 @@ jobs:
         run: |
           PLATFORM_ARCH=$(echo "${{ matrix.platform_info }}" | cut -d'-' -f1,2)
           JDK_INFO=$(echo "${{ matrix.platform_info }}" | cut -d'-' -f3)
+          
+          TAG_INFO=$(echo "${{ matrix.platform_info }}" | sed 's/\//-/g')
 
           echo "platform_arch=$PLATFORM_ARCH" >> $GITHUB_OUTPUT
           echo "jdk_version=$JDK_INFO" >> $GITHUB_OUTPUT
+          echo "tag_info=$TAG_INFO" >> $GITHUB_OUTPUT 
     
-          # see https://github.com/apache/maven-mvnd/releases
           if [ "$PLATFORM_ARCH" = "linux/amd64" ]; then
             BASE_IMAGE="openjdk:${JDK_INFO}"
             MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-linux-amd64.zip"
@@ -113,10 +121,10 @@ jobs:
             MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-windows-amd64.zip"
           elif [ "$PLATFORM_ARCH" = "darwin/amd64" ]; then
             BASE_IMAGE="openjdk:${JDK_INFO}"
-            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-darwin-amd64.zip"
+            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-macos-amd64.zip"
           elif [ "$PLATFORM_ARCH" = "darwin/aarch64" ]; then
             BASE_IMAGE="openjdk:${JDK_INFO}"
-            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-darwin-aarch64.zip"
+            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-macos-aarch64.zip"
           fi
           echo "base_image=$BASE_IMAGE" >> $GITHUB_OUTPUT
           echo "mvnd_archive=$MVND_ARCHIVE" >> $GITHUB_OUTPUT
@@ -128,7 +136,7 @@ jobs:
           file: ./Dockerfile
           platforms: ${{ steps.parse_info.outputs.platform_arch }}
           push: true
-          tags: power4j/mvnd:${{ github.event.inputs.mvnd_version }}-${{ matrix.platform_info }}
+          tags: power4j/mvnd:${{ github.event.inputs.mvnd_version }}-${{ steps.parse_info.outputs.tag_info }}
           build-args: |
             MVND_VERSION=${{ github.event.inputs.mvnd_version }}
             MVND_ARCHIVE_FILE=${{ steps.parse_info.outputs.mvnd_archive }}
