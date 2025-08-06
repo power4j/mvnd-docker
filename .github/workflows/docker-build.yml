@@ -80,6 +80,11 @@ jobs:
           fi
 
           echo "mvnd_archive=$MVND_ARCHIVE" >> $GITHUB_OUTPUT
+          
+          # Generate the complete download URL
+          MVND_URL="https://github.com/apache/maven-mvnd/releases/download/${{ inputs.mvnd_version }}/$MVND_ARCHIVE"
+          echo "MVND_URL is: $MVND_URL"
+          echo "mvnd_url=$MVND_URL" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -92,4 +97,5 @@ jobs:
           build-args: |
             MVND_VERSION=${{ inputs.mvnd_version }}
             MVND_ARCHIVE_FILE=${{ steps.parse_info.outputs.mvnd_archive }}
+            MVND_URL=${{ steps.parse_info.outputs.mvnd_url }}
             BASE_IMAGE=${{ inputs.base_image }} 

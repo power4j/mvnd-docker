@@ -1,54 +1,54 @@
-name: Build and Push to Docker Hub
+name: Build and Push Docker Image
 
 on:
   workflow_dispatch:
     inputs:
       mvnd_version:
-        description: 'version to build (see releases: https://github.com/apache/maven-mvnd/releases)'
+        description: 'mvnd version to use (see releases: https://github.com/apache/maven-mvnd/releases)'
         required: true
-        default: 'latest'
+        default: '1.0.2'
       all_platforms:
-        description: 'Select all supported platforms and JDK versions'
+        description: 'Select all'
         required: false
         type: boolean
         default: false
       linux_amd64_jdk8:
-        description: 'Build for linux/amd64 with JDK8'
+        description: 'linux/amd64 with JDK8'
         required: false
         type: boolean
         default: false
       linux_amd64_jdk17:
-        description: 'Build for linux/amd64 with JDK17'
+        description: 'linux/amd64 with JDK17'
         required: false
         type: boolean
         default: false
       windows_amd64_jdk8:
-        description: 'Build for windows/amd64 with JDK8'
+        description: 'windows/amd64 with JDK8'
         required: false
         type: boolean
         default: false
       windows_amd64_jdk17:
-        description: 'Build for windows/amd64 with JDK17'
+        description: 'windows/amd64 with JDK17'
         required: false
         type: boolean
         default: false
       darwin_amd64_jdk8:
-        description: 'Build for darwin/amd64 with JDK8'
+        description: 'darwin/amd64 with JDK8'
         required: false
         type: boolean
         default: false
       darwin_amd64_jdk17:
-        description: 'Build for darwin/amd64 with JDK17'
+        description: 'darwin/amd64 with JDK17'
         required: false
         type: boolean
         default: false
       darwin_aarch64_jdk8:
-        description: 'Build for darwin/aarch64 with JDK8'
+        description: 'darwin/aarch64 with JDK8'
         required: false
         type: boolean
         default: false
       darwin_aarch64_jdk17:
-        description: 'Build for darwin/aarch64 with JDK17'
+        description: 'darwin/aarch64 with JDK17'
         required: false
         type: boolean
         default: false
