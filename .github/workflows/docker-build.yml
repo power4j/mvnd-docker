@@ -1,0 +1,95 @@
+name: Build Image
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: string
+      jdk:
+        required: true
+        type: string
+      mvnd_version:
+        required: true
+        type: string
+      base_image:
+        required: true
+        type: string
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up QEMU
+        if: startsWith(inputs.platform, 'linux/')
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Parse platform information
+        id: parse_info
+        run: |
+          PLATFORM_ARCH="${{ inputs.platform }}"
+          JDK_INFO="${{ inputs.jdk }}"
+          TAG_INFO=$(echo "${{ inputs.platform }}" | sed 's/\//-/g')
+
+          echo "PLATFORM_ARCH is: $PLATFORM_ARCH"
+          echo "JDK_INFO is: $JDK_INFO"
+          echo "TAG_INFO is: $TAG_INFO"
+
+          echo "platform_arch=$PLATFORM_ARCH" >> $GITHUB_OUTPUT
+          echo "jdk_version=$JDK_INFO" >> $GITHUB_OUTPUT
+          echo "tag_info=$TAG_INFO" >> $GITHUB_OUTPUT 
+    
+          MVND_ARCHIVE=""
+          if [ "$PLATFORM_ARCH" = "linux/amd64" ]; then
+            MVND_ARCHIVE="mvnd-${{ inputs.mvnd_version }}-linux-amd64.zip"
+          elif [ "$PLATFORM_ARCH" = "windows/amd64" ]; then
+            MVND_ARCHIVE="mvnd-${{ inputs.mvnd_version }}-windows-amd64.zip"
+          elif [ "$PLATFORM_ARCH" = "darwin/amd64" ]; then
+            MVND_ARCHIVE="mvnd-${{ inputs.mvnd_version }}-darwin-amd64.zip"
+          elif [ "$PLATFORM_ARCH" = "darwin/aarch64" ]; then
+            MVND_ARCHIVE="mvnd-${{ inputs.mvnd_version }}-darwin-aarch64.zip"
+          fi
+          
+          if [ -z "$MVND_ARCHIVE" ]; then
+            echo "Error: MVND_ARCHIVE is empty. Check platform value."
+            exit 1
+          fi
+
+          echo "mvnd_archive=$MVND_ARCHIVE" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ steps.parse_info.outputs.platform_arch }}
+          push: true
+          tags: power4j/mvnd:${{ inputs.mvnd_version }}-${{ steps.parse_info.outputs.tag_info }}
+          build-args: |
+            MVND_VERSION=${{ inputs.mvnd_version }}
+            MVND_ARCHIVE_FILE=${{ steps.parse_info.outputs.mvnd_archive }}
+            BASE_IMAGE=${{ inputs.base_image }} 

@@ -56,7 +56,7 @@ on:
 jobs:
   build-linux-amd64-jdk8:
     if: inputs.all_platforms || inputs.linux_amd64_jdk8
-    uses: ./.github/workflows/build-platform.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       platform: linux/amd64
       jdk: jdk8
@@ -68,7 +68,7 @@ jobs:
 
   build-linux-amd64-jdk17:
     if: inputs.all_platforms || inputs.linux_amd64_jdk17
-    uses: ./.github/workflows/build-platform.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       platform: linux/amd64
       jdk: jdk17
@@ -80,7 +80,7 @@ jobs:
 
   build-windows-amd64-jdk8:
     if: inputs.all_platforms || inputs.windows_amd64_jdk8
-    uses: ./.github/workflows/build-platform.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       platform: windows/amd64
       jdk: jdk8
@@ -92,7 +92,7 @@ jobs:
 
   build-windows-amd64-jdk17:
     if: inputs.all_platforms || inputs.windows_amd64_jdk17
-    uses: ./.github/workflows/build-platform.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       platform: windows/amd64
       jdk: jdk17
@@ -104,7 +104,7 @@ jobs:
 
   build-darwin-amd64-jdk8:
     if: inputs.all_platforms || inputs.darwin_amd64_jdk8
-    uses: ./.github/workflows/build-platform.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       platform: darwin/amd64
       jdk: jdk8
@@ -116,7 +116,7 @@ jobs:
 
   build-darwin-amd64-jdk17:
     if: inputs.all_platforms || inputs.darwin_amd64_jdk17
-    uses: ./.github/workflows/build-platform.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       platform: darwin/amd64
       jdk: jdk17
@@ -128,7 +128,7 @@ jobs:
 
   build-darwin-aarch64-jdk8:
     if: inputs.all_platforms || inputs.darwin_aarch64_jdk8
-    uses: ./.github/workflows/build-platform.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       platform: darwin/aarch64
       jdk: jdk8
@@ -140,7 +140,7 @@ jobs:
 
   build-darwin-aarch64-jdk17:
     if: inputs.all_platforms || inputs.darwin_aarch64_jdk17
-    uses: ./.github/workflows/build-platform.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       platform: darwin/aarch64
       jdk: jdk17
