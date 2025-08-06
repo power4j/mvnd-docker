@@ -1,0 +1,92 @@
+name: Build and Push to Docker Hub
+
+on:
+  workflow_dispatch:
+    inputs:
+      mvnd_version:
+        description: 'version to build (see releases: https://github.com/apache/maven-mvnd/releases)'
+        required: true
+        default: 'latest'
+      platforms:
+        description: 'Select platforms to build for (multi-select)'
+        required: true
+        type: choice
+        options:
+          - linux/amd64-jdk8
+          - linux/amd64-jdk17
+          - windows/amd64-jdk8
+          - windows/amd64-jdk17
+          - darwin/amd64-jdk8
+          - darwin/amd64-jdk17
+          - darwin/aarch64-jdk8
+          - darwin/aarch64-jdk17
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy:
+      matrix:
+        platform_info: ${{ fromJson(github.event.inputs.platforms) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      #for linux/arm
+      #- name: Set up QEMU
+      #  if: startsWith(matrix.platform_info, 'linux/')
+      #  uses: docker/setup-qemu-action@v3
+      #  with:
+      #    platforms: all
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Parse platform information
+        id: parse_info
+        run: |
+          PLATFORM_ARCH=$(echo "${{ matrix.platform_info }}" | cut -d'-' -f1,2)
+          JDK_INFO=$(echo "${{ matrix.platform_info }}" | cut -d'-' -f3)
+
+          echo "platform_arch=$PLATFORM_ARCH" >> $GITHUB_OUTPUT
+          echo "jdk_version=$JDK_INFO" >> $GITHUB_OUTPUT
+ 
+          # see https://github.com/apache/maven-mvnd/releases
+          if [ "$PLATFORM_ARCH" = "linux/amd64" ]; then
+            BASE_IMAGE="openjdk:${JDK_INFO}"
+            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-linux-amd64.zip"
+          elif [ "$PLATFORM_ARCH" = "windows/amd64" ]; then
+            BASE_IMAGE="openjdk:${JDK_INFO}"
+            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-windows-amd64.zip"
+          elif [ "$PLATFORM_ARCH" = "darwin/amd64" ]; then
+            BASE_IMAGE="openjdk:${JDK_INFO}"
+            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-darwin-amd64.zip"
+          elif [ "$PLATFORM_ARCH" = "darwin/aarch64" ]; then
+            BASE_IMAGE="openjdk:${JDK_INFO}"
+            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-darwin-aarch64.zip"
+          fi
+          echo "base_image=$BASE_IMAGE" >> $GITHUB_OUTPUT
+          echo "mvnd_archive=$MVND_ARCHIVE" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ steps.parse_info.outputs.platform_arch }}
+          push: true
+          tags: power4j/mvnd:${{ github.event.inputs.mvnd_version }}-${{ matrix.platform_info }}
+          build-args: |
+            MVND_VERSION=${{ github.event.inputs.mvnd_version }}
+            MVND_ARCHIVE_FILE=${{ steps.parse_info.outputs.mvnd_archive }}
+            BASE_IMAGE=${{ steps.parse_info.outputs.base_image }}
