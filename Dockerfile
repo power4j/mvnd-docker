@@ -2,6 +2,7 @@ FROM alpine:3.15.0
 
 LABEL maintainer="https://github.com/power4j/mvnd-docker"
 
+ARG BASE_IMAGE
 ARG ALPINE_CN
 
 RUN if [[ "${ALPINE_CN}" = "true" ]] ; then \
@@ -31,7 +32,6 @@ RUN mkdir -p /tmp/zip \
 
 RUN rm -rf /var/cache/apk/* && rm -rf /tmp/zip
 
-ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 
 COPY --from=0 /tmp/mvnd /usr/local/mvnd
