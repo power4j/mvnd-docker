@@ -7,19 +7,46 @@ on:
         description: 'version to build (see releases: https://github.com/apache/maven-mvnd/releases)'
         required: true
         default: 'latest'
-      platforms:
-        description: 'Select platforms to build for (multi-select)'
-        required: true
-        type: choice
-        options:
-          - linux/amd64-jdk8
-          - linux/amd64-jdk17
-          - windows/amd64-jdk8
-          - windows/amd64-jdk17
-          - darwin/amd64-jdk8
-          - darwin/amd64-jdk17
-          - darwin/aarch64-jdk8
-          - darwin/aarch64-jdk17
+      linux_amd64_jdk8:
+        description: 'Build for linux/amd64 with JDK8'
+        required: false
+        type: boolean
+        default: true
+      linux_amd64_jdk17:
+        description: 'Build for linux/amd64 with JDK17'
+        required: false
+        type: boolean
+        default: true
+      windows_amd64_jdk8:
+        description: 'Build for windows/amd64 with JDK8'
+        required: false
+        type: boolean
+        default: false
+      windows_amd64_jdk17:
+        description: 'Build for windows/amd64 with JDK17'
+        required: false
+        type: boolean
+        default: false
+      darwin_amd64_jdk8:
+        description: 'Build for darwin/amd64 with JDK8'
+        required: false
+        type: boolean
+        default: false
+      darwin_amd64_jdk17:
+        description: 'Build for darwin/amd64 with JDK17'
+        required: false
+        type: boolean
+        default: false
+      darwin_aarch64_jdk8:
+        description: 'Build for darwin/aarch64 with JDK8'
+        required: false
+        type: boolean
+        default: false
+      darwin_aarch64_jdk17:
+        description: 'Build for darwin/aarch64 with JDK17'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build-and-push:
@@ -30,8 +57,25 @@ jobs:
       id-token: write
     strategy:
       matrix:
-        platform_info: ${{ fromJson(github.event.inputs.platforms) }}
-
+        include:
+          - if: ${{ inputs.linux_amd64_jdk8 }}
+            platform_info: 'linux/amd64-jdk8'
+          - if: ${{ inputs.linux_amd64_jdk17 }}
+            platform_info: 'linux/amd64-jdk17'
+          - if: ${{ inputs.windows_amd64_jdk8 }}
+            platform_info: 'windows/amd64-jdk8'
+          - if: ${{ inputs.windows_amd64_jdk17 }}
+            platform_info: 'windows/amd64-jdk17'
+          - if: ${{ inputs.darwin_amd64_jdk8 }}
+            platform_info: 'darwin/amd64-jdk8'
+          - if: ${{ inputs.darwin_amd64_jdk17 }}
+            platform_info: 'darwin/amd64-jdk17'
+          - if: ${{ inputs.darwin_aarch64_jdk8 }}
+            platform_info: 'darwin/aarch64-jdk8'
+          - if: ${{ inputs.darwin_aarch64_jdk17 }}
+            platform_info: 'darwin/aarch64-jdk17'
+      fail-fast: false
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -42,12 +86,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      #for linux/arm
-      #- name: Set up QEMU
-      #  if: startsWith(matrix.platform_info, 'linux/')
-      #  uses: docker/setup-qemu-action@v3
-      #  with:
-      #    platforms: all
+      - name: Set up QEMU
+        if: startsWith(matrix.platform_info, 'linux/')
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -60,7 +103,7 @@ jobs:
 
           echo "platform_arch=$PLATFORM_ARCH" >> $GITHUB_OUTPUT
           echo "jdk_version=$JDK_INFO" >> $GITHUB_OUTPUT
- 
+    
           # see https://github.com/apache/maven-mvnd/releases
           if [ "$PLATFORM_ARCH" = "linux/amd64" ]; then
             BASE_IMAGE="openjdk:${JDK_INFO}"
