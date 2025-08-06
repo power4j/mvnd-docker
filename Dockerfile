@@ -28,6 +28,10 @@ RUN rm -rf /var/cache/apk/* && rm -rf /tmp/zip
 
 FROM ${BASE_IMAGE}
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git git-lfs \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=0 /tmp/mvnd /usr/local/mvnd
 
 ENV MVND_HOME=/usr/local/mvnd
