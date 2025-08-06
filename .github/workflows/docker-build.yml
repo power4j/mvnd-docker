@@ -63,26 +63,26 @@ jobs:
           echo "jdk_version=$JDK_INFO" >> $GITHUB_OUTPUT
           echo "tag_info=$TAG_INFO" >> $GITHUB_OUTPUT 
     
-          MVND_ARCHIVE=""
+          MVND_FILE=""
           if [ "$PLATFORM_ARCH" = "linux/amd64" ]; then
-            MVND_ARCHIVE="mvnd-${{ inputs.mvnd_version }}-linux-amd64.zip"
+            MVND_FILE="maven-mvnd-${{ inputs.mvnd_version }}-linux-amd64.zip"
           elif [ "$PLATFORM_ARCH" = "windows/amd64" ]; then
-            MVND_ARCHIVE="mvnd-${{ inputs.mvnd_version }}-windows-amd64.zip"
+            MVND_FILE="maven-mvnd-${{ inputs.mvnd_version }}-windows-amd64.zip"
           elif [ "$PLATFORM_ARCH" = "darwin/amd64" ]; then
-            MVND_ARCHIVE="mvnd-${{ inputs.mvnd_version }}-darwin-amd64.zip"
+            MVND_FILE="maven-mvnd-${{ inputs.mvnd_version }}-darwin-amd64.zip"
           elif [ "$PLATFORM_ARCH" = "darwin/aarch64" ]; then
-            MVND_ARCHIVE="mvnd-${{ inputs.mvnd_version }}-darwin-aarch64.zip"
+            MVND_FILE="maven-mvnd-${{ inputs.mvnd_version }}-darwin-aarch64.zip"
           fi
           
-          if [ -z "$MVND_ARCHIVE" ]; then
-            echo "Error: MVND_ARCHIVE is empty. Check platform value."
+          if [ -z "$MVND_FILE" ]; then
+            echo "Error: MVND_FILE is empty. Check platform value."
             exit 1
           fi
 
-          echo "mvnd_archive=$MVND_ARCHIVE" >> $GITHUB_OUTPUT
+          echo "mvnd_file=$MVND_FILE" >> $GITHUB_OUTPUT
           
           # Generate the complete download URL
-          MVND_URL="https://github.com/apache/maven-mvnd/releases/download/${{ inputs.mvnd_version }}/$MVND_ARCHIVE"
+          MVND_URL="https://github.com/apache/maven-mvnd/releases/download/${{ inputs.mvnd_version }}/$MVND_FILE"
           echo "MVND_URL is: $MVND_URL"
           echo "mvnd_url=$MVND_URL" >> $GITHUB_OUTPUT
 
@@ -95,7 +95,5 @@ jobs:
           push: true
           tags: power4j/mvnd:${{ inputs.mvnd_version }}-${{ steps.parse_info.outputs.tag_info }}
           build-args: |
-            MVND_VERSION=${{ inputs.mvnd_version }}
-            MVND_ARCHIVE_FILE=${{ steps.parse_info.outputs.mvnd_archive }}
             MVND_URL=${{ steps.parse_info.outputs.mvnd_url }}
             BASE_IMAGE=${{ inputs.base_image }} 
