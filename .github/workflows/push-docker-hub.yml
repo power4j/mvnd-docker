@@ -54,108 +54,98 @@ on:
         default: false
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # jdk8
-          - platform_info: 'linux/amd64-jdk8'
-            base_image: 'eclipse-temurin:8-jdk-jammy'
-            should_build: ${{ inputs.all_platforms || inputs.linux_amd64_jdk8 }}
-          - platform_info: 'darwin/amd64-jdk8'
-            base_image: 'eclipse-temurin:8-jdk-jammy'
-            should_build: ${{ inputs.all_platforms || inputs.darwin_amd64_jdk8 }}
-          - platform_info: 'darwin/aarch64-jdk8'
-            base_image: 'eclipse-temurin:8-jdk-jammy'
-            should_build: ${{ inputs.all_platforms || inputs.darwin_aarch64_jdk8 }}
-          - platform_info: 'windows/amd64-jdk8'
-            base_image: 'eclipse-temurin:8-jdk-windowsservercore-ltsc2022'
-            should_build: ${{ inputs.all_platforms || inputs.windows_amd64_jdk8 }}
-          
-          # jdk17
-          - platform_info: 'linux/amd64-jdk17'
-            base_image: 'eclipse-temurin:17-jdk-jammy'
-            should_build: ${{ inputs.all_platforms || inputs.linux_amd64_jdk17 }}
-          - platform_info: 'darwin/amd64-jdk17'
-            base_image: 'eclipse-temurin:17-jdk-jammy'
-            should_build: ${{ inputs.all_platforms || inputs.darwin_amd64_jdk17 }}
-          - platform_info: 'darwin/aarch64-jdk17'
-            base_image: 'eclipse-temurin:17-jdk-jammy'
-            should_build: ${{ inputs.all_platforms || inputs.darwin_aarch64_jdk17 }}
-          - platform_info: 'windows/amd64-jdk17'
-            base_image: 'eclipse-temurin:17-jdk-windowsservercore-ltsc2022'
-            should_build: ${{ inputs.all_platforms || inputs.windows_amd64_jdk17 }}
-    
-    if: matrix.should_build == 'true'
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  build-linux-amd64-jdk8:
+    if: inputs.all_platforms || inputs.linux_amd64_jdk8
+    uses: ./.github/workflows/build-platform.yml
+    with:
+      platform: linux/amd64
+      jdk: jdk8
+      mvnd_version: ${{ inputs.mvnd_version }}
+      base_image: eclipse-temurin:8-jdk-jammy
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+  build-linux-amd64-jdk17:
+    if: inputs.all_platforms || inputs.linux_amd64_jdk17
+    uses: ./.github/workflows/build-platform.yml
+    with:
+      platform: linux/amd64
+      jdk: jdk17
+      mvnd_version: ${{ inputs.mvnd_version }}
+      base_image: eclipse-temurin:17-jdk-jammy
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up QEMU
-        if: startsWith(matrix.platform_info, 'linux/')
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: all
+  build-windows-amd64-jdk8:
+    if: inputs.all_platforms || inputs.windows_amd64_jdk8
+    uses: ./.github/workflows/build-platform.yml
+    with:
+      platform: windows/amd64
+      jdk: jdk8
+      mvnd_version: ${{ inputs.mvnd_version }}
+      base_image: eclipse-temurin:8-jdk-windowsservercore-ltsc2022
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+  build-windows-amd64-jdk17:
+    if: inputs.all_platforms || inputs.windows_amd64_jdk17
+    uses: ./.github/workflows/build-platform.yml
+    with:
+      platform: windows/amd64
+      jdk: jdk17
+      mvnd_version: ${{ inputs.mvnd_version }}
+      base_image: eclipse-temurin:17-jdk-windowsservercore-ltsc2022
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Parse platform information
-        id: parse_info
-        run: |
-          PLATFORM_ARCH=$(echo "${{ matrix.platform_info }}" | cut -d'-' -f1)
-          JDK_INFO=$(echo "${{ matrix.platform_info }}" | cut -d'-' -f2)
-          TAG_INFO=$(echo "${{ matrix.platform_info }}" | sed 's/\//-/g')
+  build-darwin-amd64-jdk8:
+    if: inputs.all_platforms || inputs.darwin_amd64_jdk8
+    uses: ./.github/workflows/build-platform.yml
+    with:
+      platform: darwin/amd64
+      jdk: jdk8
+      mvnd_version: ${{ inputs.mvnd_version }}
+      base_image: eclipse-temurin:8-jdk-jammy
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-          echo "PLATFORM_ARCH is: $PLATFORM_ARCH"
-          echo "JDK_INFO is: $JDK_INFO"
-          echo "TAG_INFO is: $TAG_INFO"
+  build-darwin-amd64-jdk17:
+    if: inputs.all_platforms || inputs.darwin_amd64_jdk17
+    uses: ./.github/workflows/build-platform.yml
+    with:
+      platform: darwin/amd64
+      jdk: jdk17
+      mvnd_version: ${{ inputs.mvnd_version }}
+      base_image: eclipse-temurin:17-jdk-jammy
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-          echo "platform_arch=$PLATFORM_ARCH" >> $GITHUB_OUTPUT
-          echo "jdk_version=$JDK_INFO" >> $GITHUB_OUTPUT
-          echo "tag_info=$TAG_INFO" >> $GITHUB_OUTPUT 
-    
-          MVND_ARCHIVE=""
-          if [ "$PLATFORM_ARCH" = "linux/amd64" ]; then
-            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-linux-amd64.zip"
-          elif [ "$PLATFORM_ARCH" = "windows/amd64" ]; then
-            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-windows-amd64.zip"
-          elif [ "$PLATFORM_ARCH" = "darwin/amd64" ]; then
-            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-darwin-amd64.zip"
-          elif [ "$PLATFORM_ARCH" = "darwin/aarch64" ]; then
-            MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-darwin-aarch64.zip"
-          fi
-          
-          if [ -z "$MVND_ARCHIVE" ]; then
-            echo "Error: MVND_ARCHIVE is empty. Check matrix.platform_info value."
-            exit 1
-          fi
+  build-darwin-aarch64-jdk8:
+    if: inputs.all_platforms || inputs.darwin_aarch64_jdk8
+    uses: ./.github/workflows/build-platform.yml
+    with:
+      platform: darwin/aarch64
+      jdk: jdk8
+      mvnd_version: ${{ inputs.mvnd_version }}
+      base_image: eclipse-temurin:8-jdk-jammy
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-          echo "mvnd_archive=$MVND_ARCHIVE" >> $GITHUB_OUTPUT
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: ${{ steps.parse_info.outputs.platform_arch }}
-          push: true
-          tags: power4j/mvnd:${{ github.event.inputs.mvnd_version }}-${{ steps.parse_info.outputs.tag_info }}
-          build-args: |
-            MVND_VERSION=${{ github.event.inputs.mvnd_version }}
-            MVND_ARCHIVE_FILE=${{ steps.parse_info.outputs.mvnd_archive }}
-            BASE_IMAGE=${{ matrix.base_image }}
+  build-darwin-aarch64-jdk17:
+    if: inputs.all_platforms || inputs.darwin_aarch64_jdk17
+    uses: ./.github/workflows/build-platform.yml
+    with:
+      platform: darwin/aarch64
+      jdk: jdk17
+      mvnd_version: ${{ inputs.mvnd_version }}
+      base_image: eclipse-temurin:17-jdk-jammy
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
