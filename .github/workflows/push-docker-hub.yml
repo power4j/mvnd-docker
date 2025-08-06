@@ -66,32 +66,34 @@ jobs:
       matrix:
         include:
           # jdk8
-          - if: ${{ inputs.all_platforms || inputs.linux_amd64_jdk8 }}
-            platform_info: 'linux/amd64-jdk8'
+          - platform_info: 'linux/amd64-jdk8'
             base_image: 'eclipse-temurin:8-jdk-jammy'
-          - if: ${{ inputs.all_platforms || inputs.darwin_amd64_jdk8 }}
-            platform_info: 'darwin/amd64-jdk8'
+            should_build: ${{ inputs.all_platforms || inputs.linux_amd64_jdk8 }}
+          - platform_info: 'darwin/amd64-jdk8'
             base_image: 'eclipse-temurin:8-jdk-jammy'
-          - if: ${{ inputs.all_platforms || inputs.darwin_aarch64_jdk8 }}
-            platform_info: 'darwin/aarch64-jdk8'
+            should_build: ${{ inputs.all_platforms || inputs.darwin_amd64_jdk8 }}
+          - platform_info: 'darwin/aarch64-jdk8'
             base_image: 'eclipse-temurin:8-jdk-jammy'
-          - if: ${{ inputs.all_platforms || inputs.windows_amd64_jdk8 }}
-            platform_info: 'windows/amd64-jdk8'
+            should_build: ${{ inputs.all_platforms || inputs.darwin_aarch64_jdk8 }}
+          - platform_info: 'windows/amd64-jdk8'
             base_image: 'eclipse-temurin:8-jdk-windowsservercore-ltsc2022'
+            should_build: ${{ inputs.all_platforms || inputs.windows_amd64_jdk8 }}
           
           # jdk17
-          - if: ${{ inputs.all_platforms || inputs.linux_amd64_jdk17 }}
-            platform_info: 'linux/amd64-jdk17'
+          - platform_info: 'linux/amd64-jdk17'
             base_image: 'eclipse-temurin:17-jdk-jammy'
-          - if: ${{ inputs.all_platforms || inputs.darwin_amd64_jdk17 }}
-            platform_info: 'darwin/amd64-jdk17'
+            should_build: ${{ inputs.all_platforms || inputs.linux_amd64_jdk17 }}
+          - platform_info: 'darwin/amd64-jdk17'
             base_image: 'eclipse-temurin:17-jdk-jammy'
-          - if: ${{ inputs.all_platforms || inputs.darwin_aarch64_jdk17 }}
-            platform_info: 'darwin/aarch64-jdk17'
+            should_build: ${{ inputs.all_platforms || inputs.darwin_amd64_jdk17 }}
+          - platform_info: 'darwin/aarch64-jdk17'
             base_image: 'eclipse-temurin:17-jdk-jammy'
-          - if: ${{ inputs.all_platforms || inputs.windows_amd64_jdk17 }}
-            platform_info: 'windows/amd64-jdk17'
+            should_build: ${{ inputs.all_platforms || inputs.darwin_aarch64_jdk17 }}
+          - platform_info: 'windows/amd64-jdk17'
             base_image: 'eclipse-temurin:17-jdk-windowsservercore-ltsc2022'
+            should_build: ${{ inputs.all_platforms || inputs.windows_amd64_jdk17 }}
+    
+    if: matrix.should_build == 'true'
     
     steps:
       - name: Checkout repository
