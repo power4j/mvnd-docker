@@ -64,22 +64,33 @@ jobs:
     strategy:
       matrix:
         include:
+          # jdk8
           - if: ${{ inputs.all_platforms || inputs.linux_amd64_jdk8 }}
             platform_info: 'linux/amd64-jdk8'
-          - if: ${{ inputs.all_platforms || inputs.linux_amd64_jdk17 }}
-            platform_info: 'linux/amd64-jdk17'
-          - if: ${{ inputs.all_platforms || inputs.windows_amd64_jdk8 }}
-            platform_info: 'windows/amd64-jdk8'
-          - if: ${{ inputs.all_platforms || inputs.windows_amd64_jdk17 }}
-            platform_info: 'windows/amd64-jdk17'
+            base_image: 'eclipse-temurin:8-jdk-jammy'
           - if: ${{ inputs.all_platforms || inputs.darwin_amd64_jdk8 }}
             platform_info: 'darwin/amd64-jdk8'
-          - if: ${{ inputs.all_platforms || inputs.darwin_amd64_jdk17 }}
-            platform_info: 'darwin/amd64-jdk17'
+            base_image: 'eclipse-temurin:8-jdk-jammy'
           - if: ${{ inputs.all_platforms || inputs.darwin_aarch64_jdk8 }}
             platform_info: 'darwin/aarch64-jdk8'
+            base_image: 'eclipse-temurin:8-jdk-jammy'
+          - if: ${{ inputs.all_platforms || inputs.windows_amd64_jdk8 }}
+            platform_info: 'windows/amd64-jdk8'
+            base_image: 'eclipse-temurin:8-jdk-windowsservercore-ltsc2022'
+          
+          # jdk17
+          - if: ${{ inputs.all_platforms || inputs.linux_amd64_jdk17 }}
+            platform_info: 'linux/amd64-jdk17'
+            base_image: 'eclipse-temurin:17-jdk-jammy'
+          - if: ${{ inputs.all_platforms || inputs.darwin_amd64_jdk17 }}
+            platform_info: 'darwin/amd64-jdk17'
+            base_image: 'eclipse-temurin:17-jdk-jammy'
           - if: ${{ inputs.all_platforms || inputs.darwin_aarch64_jdk17 }}
             platform_info: 'darwin/aarch64-jdk17'
+            base_image: 'eclipse-temurin:17-jdk-jammy'
+          - if: ${{ inputs.all_platforms || inputs.windows_amd64_jdk17 }}
+            platform_info: 'windows/amd64-jdk17'
+            base_image: 'eclipse-temurin:17-jdk-windowsservercore-ltsc2022'
       fail-fast: false
     
     steps:
@@ -106,27 +117,27 @@ jobs:
         run: |
           PLATFORM_ARCH=$(echo "${{ matrix.platform_info }}" | cut -d'-' -f1,2)
           JDK_INFO=$(echo "${{ matrix.platform_info }}" | cut -d'-' -f3)
-          
           TAG_INFO=$(echo "${{ matrix.platform_info }}" | sed 's/\//-/g')
+
+          echo "PLATFORM_ARCH is: $PLATFORM_ARCH"
+          echo "JDK_INFO is: $JDK_INFO"
+          echo "TAG_INFO is: $TAG_INFO"
 
           echo "platform_arch=$PLATFORM_ARCH" >> $GITHUB_OUTPUT
           echo "jdk_version=$JDK_INFO" >> $GITHUB_OUTPUT
           echo "tag_info=$TAG_INFO" >> $GITHUB_OUTPUT 
     
+          MVND_ARCHIVE=""
           if [ "$PLATFORM_ARCH" = "linux/amd64" ]; then
-            BASE_IMAGE="openjdk:${JDK_INFO}"
             MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-linux-amd64.zip"
           elif [ "$PLATFORM_ARCH" = "windows/amd64" ]; then
-            BASE_IMAGE="openjdk:${JDK_INFO}"
             MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-windows-amd64.zip"
           elif [ "$PLATFORM_ARCH" = "darwin/amd64" ]; then
-            BASE_IMAGE="openjdk:${JDK_INFO}"
             MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-macos-amd64.zip"
           elif [ "$PLATFORM_ARCH" = "darwin/aarch64" ]; then
-            BASE_IMAGE="openjdk:${JDK_INFO}"
             MVND_ARCHIVE="mvnd-${{ github.event.inputs.mvnd_version }}-macos-aarch64.zip"
           fi
-          echo "base_image=$BASE_IMAGE" >> $GITHUB_OUTPUT
+          
           echo "mvnd_archive=$MVND_ARCHIVE" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
@@ -140,4 +151,4 @@ jobs:
           build-args: |
             MVND_VERSION=${{ github.event.inputs.mvnd_version }}
             MVND_ARCHIVE_FILE=${{ steps.parse_info.outputs.mvnd_archive }}
-            BASE_IMAGE=${{ steps.parse_info.outputs.base_image }}
+            BASE_IMAGE=${{ matrix.base_image }}
