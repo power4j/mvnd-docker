@@ -15,9 +15,20 @@ RUN apk update \
     && apk add --no-cache wget unzip curl
 
 
-ARG MVND_URL
+ARG MVND_URL_LINUX_AMD64
+ARG MVND_URL_LINUX_ARM64
+ARG TARGETPLATFORM
 
-RUN echo "Downloading mvnd from: $MVND_URL" && \
+RUN echo "Building for platform: $TARGETPLATFORM" && \
+    if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+        MVND_URL="$MVND_URL_LINUX_AMD64"; \
+    elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+        MVND_URL="$MVND_URL_LINUX_ARM64"; \
+    else \
+        echo "Unsupported platform: $TARGETPLATFORM"; \
+        exit 1; \
+    fi && \
+    echo "Downloading mvnd from: $MVND_URL" && \
     curl -fsSL -o mvnd.zip "$MVND_URL"
 
 RUN mkdir -p /tmp/zip \
