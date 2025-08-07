@@ -77,7 +77,7 @@ jobs:
 
       - name: Build(temurin-8-jdk-jammy)
         if: inputs.all_jdk || inputs.temurin-8-jdk-jammy
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
@@ -91,7 +91,7 @@ jobs:
 
       - name: Build(temurin-17-jdk-jammy)
         if: inputs.all_jdk || inputs.temurin-17-jdk-jammy
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
