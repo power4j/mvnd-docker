@@ -1,0 +1,31 @@
+# build output
+target/
+dist/
+
+# IDE 
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+
+# maven
+.m2/
+.mvn/
+
+# log
+*.log
+logs/
+
+# system file
+.DS_Store
+Thumbs.db
+
+# temp files
+*.tmp
+*~
+
+# other
+/vendor/

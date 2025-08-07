@@ -1,0 +1,25 @@
+# git
+.git
+.gitignore
+
+# IDEA
+.idea
+.vscode
+*.iml
+
+# maven
+.m2
+.mvn
+
+# build output
+target/
+dist/
+
+
+# log
+*.log
+logs/
+
+# temp files
+*.tmp
+*~

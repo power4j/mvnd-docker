@@ -1,0 +1,138 @@
+name: Platform Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      mvnd_version:
+        description: 'mvnd version to use (see releases: https://github.com/apache/maven-mvnd/releases)'
+        required: true
+        default: '1.0.2'
+      tag-version:
+        description: 'Image version prefix,use mvnd_version if empty'
+        required: false
+        default: ''
+      all_jdk:
+        description: 'build all'
+        required: false
+        type: boolean
+        default: false
+      temurin-8-jdk-jammy:
+        description: 'use clipse-temurin:8-jdk-jammy'
+        required: false
+        type: boolean
+        default: false
+      temurin-11-jdk-jammy:
+        description: 'use clipse-temurin:11-jdk-jammy'
+        required: false
+        type: boolean
+        default: false
+      temurin-17-jdk-jammy:
+        description: 'use clipse-temurin:17-jdk-jammy'
+        required: false
+        type: boolean
+        default: false
+      temurin-21-jdk-jammy:
+        description: 'use clipse-temurin:21-jdk-jammy'
+        required: false
+        type: boolean
+        default: false
+      temurin-22-jdk-jammy:
+        description: 'use clipse-temurin:22-jdk-jammy'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_version: ${{ steps.prepare.outputs.tag_version }}
+    steps:
+      - name: Prepare tag version
+        id: prepare
+        run: |
+          MVND_VERSION="${{ github.event.inputs.mvnd_version }}"
+          TAG_VERSION="${{ github.event.inputs.tag-version }}"
+          
+          # Use tag-version if provided, otherwise use mvnd_version
+          if [ -z "$TAG_VERSION" ]; then
+            TAG_VERSION="$MVND_VERSION"
+          fi
+          
+          echo "tag_version=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "Using tag version: $TAG_VERSION"
+
+  build-temurin-8-jdk-jammy:
+    needs: prepare
+    if: inputs.all_jdk || inputs.temurin-8-jdk-jammy
+    uses: ./.github/workflows/build-platform-image.yml
+    with:
+      mvnd_version: ${{ github.event.inputs.mvnd_version }}
+      tag_version: ${{ needs.prepare.outputs.tag_version }}
+      jdk_type: temurin-8-jdk-jammy
+      base_image: eclipse-temurin:8-jdk-jammy
+      # base image not supports darwin
+      platforms: linux/amd64
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-temurin-11-jdk-jammy:
+    needs: prepare
+    if: inputs.all_jdk || inputs.temurin-11-jdk-jammy
+    uses: ./.github/workflows/build-platform-image.yml
+    with:
+      mvnd_version: ${{ github.event.inputs.mvnd_version }}
+      tag_version: ${{ needs.prepare.outputs.tag_version }}
+      jdk_type: temurin-11-jdk-jammy
+      base_image: eclipse-temurin:11-jdk-jammy
+      # base image not supports darwin
+      platforms: linux/amd64
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-temurin-17-jdk-jammy:
+    needs: prepare
+    if: inputs.all_jdk || inputs.temurin-17-jdk-jammy
+    uses: ./.github/workflows/build-platform-image.yml
+    with:
+      mvnd_version: ${{ github.event.inputs.mvnd_version }}
+      tag_version: ${{ needs.prepare.outputs.tag_version }}
+      jdk_type: temurin-17-jdk-jammy
+      base_image: eclipse-temurin:17-jdk-jammy
+      # base image not supports darwin
+      platforms: linux/amd64
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-temurin-21-jdk-jammy:
+    needs: prepare
+    if: inputs.all_jdk || inputs.temurin-21-jdk-jammy
+    uses: ./.github/workflows/build-platform-image.yml
+    with:
+      mvnd_version: ${{ github.event.inputs.mvnd_version }}
+      tag_version: ${{ needs.prepare.outputs.tag_version }}
+      jdk_type: temurin-21-jdk-jammy
+      base_image: eclipse-temurin:21-jdk-jammy
+      # base image not supports darwin
+      platforms: linux/amd64
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-temurin-22-jdk-jammy:
+    needs: prepare
+    if: inputs.all_jdk || inputs.temurin-22-jdk-jammy
+    uses: ./.github/workflows/build-platform-image.yml
+    with:
+      mvnd_version: ${{ github.event.inputs.mvnd_version }}
+      tag_version: ${{ needs.prepare.outputs.tag_version }}
+      jdk_type: temurin-22-jdk-jammy
+      base_image: eclipse-temurin:22-jdk-jammy
+      # base image not supports darwin
+      platforms: linux/amd64
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
