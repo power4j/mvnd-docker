@@ -1,4 +1,4 @@
-name: Platform Build
+name: Push Images
 
 on:
   workflow_dispatch:
@@ -65,7 +65,7 @@ jobs:
   build-temurin-8-jdk-jammy:
     needs: prepare
     if: inputs.all_jdk || inputs.temurin-8-jdk-jammy
-    uses: ./.github/workflows/build-platform-image.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       mvnd_version: ${{ github.event.inputs.mvnd_version }}
       tag_version: ${{ needs.prepare.outputs.tag_version }}
@@ -73,6 +73,7 @@ jobs:
       base_image: eclipse-temurin:8-jdk-jammy
       # base image not supports darwin
       platforms: linux/amd64
+      push_image: true
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -80,7 +81,7 @@ jobs:
   build-temurin-11-jdk-jammy:
     needs: prepare
     if: inputs.all_jdk || inputs.temurin-11-jdk-jammy
-    uses: ./.github/workflows/build-platform-image.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       mvnd_version: ${{ github.event.inputs.mvnd_version }}
       tag_version: ${{ needs.prepare.outputs.tag_version }}
@@ -88,6 +89,7 @@ jobs:
       base_image: eclipse-temurin:11-jdk-jammy
       # base image not supports darwin
       platforms: linux/amd64
+      push_image: true
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -95,7 +97,7 @@ jobs:
   build-temurin-17-jdk-jammy:
     needs: prepare
     if: inputs.all_jdk || inputs.temurin-17-jdk-jammy
-    uses: ./.github/workflows/build-platform-image.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       mvnd_version: ${{ github.event.inputs.mvnd_version }}
       tag_version: ${{ needs.prepare.outputs.tag_version }}
@@ -103,6 +105,7 @@ jobs:
       base_image: eclipse-temurin:17-jdk-jammy
       # base image not supports darwin
       platforms: linux/amd64
+      push_image: true
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -110,7 +113,7 @@ jobs:
   build-temurin-21-jdk-jammy:
     needs: prepare
     if: inputs.all_jdk || inputs.temurin-21-jdk-jammy
-    uses: ./.github/workflows/build-platform-image.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       mvnd_version: ${{ github.event.inputs.mvnd_version }}
       tag_version: ${{ needs.prepare.outputs.tag_version }}
@@ -118,6 +121,7 @@ jobs:
       base_image: eclipse-temurin:21-jdk-jammy
       # base image not supports darwin
       platforms: linux/amd64
+      push_image: true
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -125,7 +129,7 @@ jobs:
   build-temurin-22-jdk-jammy:
     needs: prepare
     if: inputs.all_jdk || inputs.temurin-22-jdk-jammy
-    uses: ./.github/workflows/build-platform-image.yml
+    uses: ./.github/workflows/docker-build.yml
     with:
       mvnd_version: ${{ github.event.inputs.mvnd_version }}
       tag_version: ${{ needs.prepare.outputs.tag_version }}
@@ -133,6 +137,7 @@ jobs:
       base_image: eclipse-temurin:22-jdk-jammy
       # base image not supports darwin
       platforms: linux/amd64
+      push_image: true
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

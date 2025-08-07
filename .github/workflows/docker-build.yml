@@ -1,4 +1,4 @@
-name: Build Platform Image
+name: Docker Build
 
 on:
   workflow_call:
@@ -21,6 +21,11 @@ on:
         required: true
         type: string
         description: 'Comma-separated list of platforms (e.g., linux/amd64,darwin/amd64,darwin/arm64)'
+      push_image:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether to push the image to Docker Hub'
     secrets:
       DOCKERHUB_USERNAME:
         required: true
@@ -129,6 +134,7 @@ jobs:
           echo "✅ All tests passed!"
 
       - name: Build and push Docker image
+        if: inputs.push_image
         uses: docker/build-push-action@v6
         with:
           context: .
