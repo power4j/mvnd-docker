@@ -102,4 +102,3 @@ jobs:
             MVND_URL_LINUX_AMD64=${{ steps.build_args.outputs.linux_amd64_url }}
             MVND_URL_LINUX_ARM64=${{ steps.build_args.outputs.linux_arm64_url }}
             BASE_IMAGE="eclipse-temurin:17-jdk-jammy"
-
