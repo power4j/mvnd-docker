@@ -28,9 +28,9 @@ on:
         description: 'Whether to push the image to Docker Hub'
     secrets:
       DOCKERHUB_USERNAME:
-        required: true
+        required: false
       DOCKERHUB_TOKEN:
-        required: true
+        required: false
 
 jobs:
   build:
@@ -45,12 +45,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Prepare Build Args 
         id: build_args
         run: |
@@ -61,6 +55,17 @@ jobs:
           echo "Base image: ${{ inputs.base_image }}"
           echo "Platforms: ${{ inputs.platforms }}"
           echo "Tag version: $TAG_VERSION"
+          
+          # Generate complete Docker tags
+          PUSH_TAG="power4j/mvnd:$TAG_VERSION-${{ inputs.jdk_type }}"
+          TESTING_TAG="power4j/mvnd:$TAG_VERSION-${{ inputs.jdk_type }}-test"
+          
+          echo "push_tag=$PUSH_TAG" >> $GITHUB_OUTPUT
+          echo "testing_tag=$TESTING_TAG" >> $GITHUB_OUTPUT
+          
+          echo "Generated Docker tags:"
+          echo "Push tag: $PUSH_TAG"
+          echo "Testing tag: $TESTING_TAG"
           
           # Generate URLs for each platform (mvnd doesn't support linux/arm64)
           LINUX_AMD64_URL="https://github.com/apache/maven-mvnd/releases/download/$MVND_VERSION/maven-mvnd-$MVND_VERSION-linux-amd64.zip"
@@ -114,7 +119,7 @@ jobs:
           context: .
           file: ./Dockerfile
           load: true
-          tags: power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}-test
+          tags: ${{ steps.build_args.outputs.testing_tag }}
           build-args: |
             MVND_URL_LINUX_AMD64=${{ steps.build_args.outputs.linux_amd64_url }}
             MVND_URL_DARWIN_AMD64=${{ steps.build_args.outputs.darwin_amd64_url }}
@@ -125,13 +130,22 @@ jobs:
         run: |
           echo "Testing mvnd image..."
           
-          docker run --rm power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}-test java --version
+          docker run --rm ${{ steps.build_args.outputs.testing_tag }} uname -a
+          
+          docker run --rm ${{ steps.build_args.outputs.testing_tag }} java -version
      
-          docker run --rm power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}-test mvnd --version
+          docker run --rm ${{ steps.build_args.outputs.testing_tag }} mvnd --version
 
-          docker run --rm power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}-test sh -c 'echo "MVND_HOME: $MVND_HOME" && $MVND_HOME/bin/mvnd --version'
+          docker run --rm ${{ steps.build_args.outputs.testing_tag }} sh -c 'echo "MVND_HOME: $MVND_HOME" && $MVND_HOME/bin/mvnd --version'
           
           echo "✅ All tests passed!"
+
+      - name: Login to DockerHub
+        if: inputs.push_image
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Docker image
         if: inputs.push_image
@@ -141,7 +155,7 @@ jobs:
           file: ./Dockerfile
           platforms: ${{ inputs.platforms }}
           push: true
-          tags: power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}
+          tags: ${{ steps.build_args.outputs.push_tag }}
           build-args: |
             MVND_URL_LINUX_AMD64=${{ steps.build_args.outputs.linux_amd64_url }}
             MVND_URL_DARWIN_AMD64=${{ steps.build_args.outputs.darwin_amd64_url }}

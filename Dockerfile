@@ -1,5 +1,5 @@
-ARG BASE_IMAGE
-ARG ALPINE_CN
+ARG BASE_IMAGE=INVALID
+ARG ALPINE_CN=false
 
 FROM alpine:3.15.0
 
@@ -20,7 +20,7 @@ ARG MVND_URL_DARWIN_AMD64
 ARG MVND_URL_DARWIN_ARM64
 ARG TARGETPLATFORM
 
-RUN echo "Building for platform: $TARGETPLATFORM" && \
+RUN echo "Building for platform: $TARGETPLATFORM,Use base image: $BASE_IMAGE" && \
     if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
         MVND_URL="$MVND_URL_LINUX_AMD64"; \
     elif [ "$TARGETPLATFORM" = "darwin/amd64" ]; then \
@@ -40,6 +40,7 @@ RUN mkdir -p /tmp/zip \
 
 RUN rm -rf /var/cache/apk/* && rm -rf /tmp/zip
 
+ARG BASE_IMAGE=INVALID
 FROM ${BASE_IMAGE}
 
 RUN apt-get update \
