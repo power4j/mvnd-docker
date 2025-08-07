@@ -103,8 +103,33 @@ jobs:
             curl -v "$DARWIN_ARM64_URL" 2>&1 | head -20
           fi
 
+      - name: Build and export to Docker for testing
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          tags: power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}-test
+          build-args: |
+            MVND_URL_LINUX_AMD64=${{ steps.build_args.outputs.linux_amd64_url }}
+            MVND_URL_DARWIN_AMD64=${{ steps.build_args.outputs.darwin_amd64_url }}
+            MVND_URL_DARWIN_ARM64=${{ steps.build_args.outputs.darwin_arm64_url }}
+            BASE_IMAGE=${{ inputs.base_image }}
+
+      - name: Test
+        run: |
+          echo "Testing mvnd image..."
+          
+          docker run --rm power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}-test java --version
+     
+          docker run --rm power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}-test mvnd --version
+
+          docker run --rm power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}-test sh -c 'echo "MVND_HOME: $MVND_HOME" && $MVND_HOME/bin/mvnd --version'
+          
+          echo "✅ All tests passed!"
+
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
