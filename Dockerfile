@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=INVALID
+ARG BASE_IMAGE=eclipse-temurin:17-jdk-jammy
 ARG ALPINE_CN=false
 
 FROM alpine:3.15.0
@@ -40,7 +40,7 @@ RUN mkdir -p /tmp/zip \
 
 RUN rm -rf /var/cache/apk/* && rm -rf /tmp/zip
 
-ARG BASE_IMAGE=INVALID
+
 FROM ${BASE_IMAGE}
 
 RUN apt-get update \
@@ -50,7 +50,10 @@ RUN apt-get update \
 COPY --from=0 /tmp/mvnd /usr/local/mvnd
 
 ENV MVND_HOME=/usr/local/mvnd
+ENV MAVEN_HOME=$MVND_HOME/mvn
+ENV PATH=.:$MVND_HOME/bin:$MAVEN_HOME/bin:$PATH
 
-ENV PATH=.:$MVND_HOME/bin:$PATH
+RUN mkdir -p $HOME/.m2
+
 
 CMD ["mvnd"]
