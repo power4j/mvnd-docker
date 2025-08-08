@@ -19,7 +19,9 @@ on:
         type: string
 
 jobs:
+  # mvnd 2.x use maven 4, jdk17+ is required
   test-temurin-8:
+    if: startsWith(github.event.inputs.mvnd_version || '1.0.2', '1.')
     uses: ./.github/workflows/docker-build.yml
     with:
       mvnd_version: ${{ github.event.inputs.mvnd_version || '1.0.2' }}

@@ -44,7 +44,7 @@ on:
 
 jobs:
   build-temurin-8-jdk-jammy:
-    if: inputs.all_jdk || inputs.temurin-8-jdk-jammy
+    if: (inputs.all_jdk || inputs.temurin-8-jdk-jammy) && startsWith(github.event.inputs.mvnd_version, '1.')
     uses: ./.github/workflows/docker-build.yml
     with:
       mvnd_version: ${{ github.event.inputs.mvnd_version }}
@@ -59,7 +59,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build-temurin-11-jdk-jammy:
-    if: inputs.all_jdk || inputs.temurin-11-jdk-jammy
+    if: (inputs.all_jdk || inputs.temurin-11-jdk-jammy) && startsWith(github.event.inputs.mvnd_version, '1.')
     uses: ./.github/workflows/docker-build.yml
     with:
       mvnd_version: ${{ github.event.inputs.mvnd_version }}
