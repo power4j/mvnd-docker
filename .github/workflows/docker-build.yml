@@ -135,6 +135,8 @@ jobs:
           docker run --rm ${{ steps.build_args.outputs.testing_tag }} java -version
      
           docker run --rm ${{ steps.build_args.outputs.testing_tag }} mvnd --version
+     
+          docker run --rm ${{ steps.build_args.outputs.testing_tag }} mvn --v
 
           docker run --rm ${{ steps.build_args.outputs.testing_tag }} sh -c 'echo "MVND_HOME: $MVND_HOME" && $MVND_HOME/bin/mvnd --version'
           
