@@ -197,7 +197,7 @@ docker run --rm power4j/mvnd:1.0.2-temurin-17-jdk-jammy java --version
 
 ## 📚 Related Links
 
-- [Apache Maven Daemon (mvnd) Documentation](https://maven.apache.org/mvnd/)
+- [Apache Maven Daemon](https://github.com/apache/maven-mvnd)
 - [Eclipse Temurin](https://adoptium.net/)
 - [Docker Hub Image Page](https://hub.docker.com/r/power4j/mvnd)
 
