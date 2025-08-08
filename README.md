@@ -1,7 +1,7 @@
 # MVND Docker Images
 
 [![Docker Hub Version](https://img.shields.io/docker/v/power4j/mvnd?label=Docker%20Hub)](https://hub.docker.com/r/power4j/mvnd)
-[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/power4j/maven-daemon-docker/platform-build.yml?branch=main)](https://github.com/power4j/maven-daemon-docker/actions)
+[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/power4j/mvnd-docker/ci.yml?branch=main)](https://github.com/power4j/mvnd-docker/actions)
 
 [English](README.md) | [中文](README.zh-CN.md)
 
