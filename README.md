@@ -13,29 +13,32 @@ Docker images for Apache Maven Daemon (`mvnd`) with multi-JDK support, enabling 
 
 ```bash
 # Use JDK 17 (Recommended)
-docker pull power4j/mvnd:1.0.2-temurin-17-jdk-jammy
+docker pull power4j/mvnd:1.0.3-temurin-17-jdk-jammy
 
 # Use JDK 8
-docker pull power4j/mvnd:1.0.2-temurin-8-jdk-jammy
+docker pull power4j/mvnd:1.0.3-temurin-8-jdk-jammy
 
 # Use JDK 11
-docker pull power4j/mvnd:1.0.2-temurin-11-jdk-jammy
+docker pull power4j/mvnd:1.0.3-temurin-11-jdk-jammy
 
 # Use JDK 21
-docker pull power4j/mvnd:1.0.2-temurin-21-jdk-jammy
+docker pull power4j/mvnd:1.0.3-temurin-21-jdk-jammy
 
 # Use JDK 22
-docker pull power4j/mvnd:1.0.2-temurin-22-jdk-jammy
+docker pull power4j/mvnd:1.0.3-temurin-22-jdk-jammy
 ```
 
 ### Basic Usage
 
 ```bash
+# Test
+docker run --rm  power4j/mvnd:1.0.3-temurin-17-jdk-jammy mvnd -v
+
 # Run in Maven project directory
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd clean install
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.3-temurin-17-jdk-jammy mvnd clean install
 
 # Or use alias to simplify commands
-alias mvnd='docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd'
+alias mvnd='docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.3-temurin-17-jdk-jammy mvnd'
 mvnd clean install
 ```
 
@@ -196,14 +199,18 @@ docker run --rm power4j/mvnd:1.0.2-temurin-17-jdk-jammy java --version
 ```
 
 ## 📚 Related Links
-
-- [Apache Maven Daemon](https://github.com/apache/maven-mvnd)
+- [Project Home](https://github.com/power4j/mvnd-docker)
+- [Apache Maven Daemon (mvnd) Documentation](https://maven.apache.org/mvnd/)
 - [Eclipse Temurin](https://adoptium.net/)
 - [Docker Hub Image Page](https://hub.docker.com/r/power4j/mvnd)
 
 ## 🤝 Contributing
 
-Issues and Pull Requests are welcome!
+Issues and Pull Requests are welcome! 👉 [https://github.com/power4j/mvnd-docker](https://github.com/power4j/mvnd-docker)
+
+## 📄 License
+
+This project is licensed under the Apache License 2.0. 
 
 ## 📄 License
 
