@@ -2,7 +2,7 @@
 target/
 dist/
 
-# IDE 
+# IDE
 .idea/
 .vscode/
 *.iml
@@ -26,6 +26,15 @@ Thumbs.db
 # temp files
 *.tmp
 *~
+
+# temp dir
+temp/
+tmp/
+
+# AI
+.claude/
+.codex/
+.mcp.json
 
 # other
 /vendor/
