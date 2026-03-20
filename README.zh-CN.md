@@ -13,29 +13,29 @@ Apache Maven Daemon (`mvnd`) 的 Docker 镜像，提供多版本 JDK 支持，�
 
 ```bash
 # 使用 JDK 17 (推荐)
-docker pull power4j/mvnd:1.0.2-temurin-17-jdk-jammy
+docker pull power4j/mvnd:1.0.4-temurin-17-jdk-jammy
 
 # 使用 JDK 8
-docker pull power4j/mvnd:1.0.2-temurin-8-jdk-jammy
+docker pull power4j/mvnd:1.0.4-temurin-8-jdk-jammy
 
 # 使用 JDK 11
-docker pull power4j/mvnd:1.0.2-temurin-11-jdk-jammy
+docker pull power4j/mvnd:1.0.4-temurin-11-jdk-jammy
 
 # 使用 JDK 21
-docker pull power4j/mvnd:1.0.2-temurin-21-jdk-jammy
+docker pull power4j/mvnd:1.0.4-temurin-21-jdk-jammy
 
 # 使用 JDK 22
-docker pull power4j/mvnd:1.0.2-temurin-22-jdk-jammy
+docker pull power4j/mvnd:1.0.4-temurin-22-jdk-jammy
 ```
 
 ### 基本使用
 
 ```bash
 # 在 Maven 项目目录中运行
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd clean install
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd clean install
 
 # 或者使用别名简化命令
-alias mvnd='docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd'
+alias mvnd='docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd'
 mvnd clean install
 ```
 
@@ -59,7 +59,7 @@ power4j/mvnd:{mvnd-version}-{jdk-type}
 
 ### 支持的 mvnd 版本
 
-- `1.0.2` (当前默认)
+- `1.0.4` (当前默认)
 - 其他版本请查看 [GitHub Releases](https://github.com/apache/maven-mvnd/releases)
 
 ## 💡 使用示例
@@ -68,40 +68,40 @@ power4j/mvnd:{mvnd-version}-{jdk-type}
 
 ```bash
 # 清理并构建
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd clean install
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd clean install
 
 # 跳过测试构建
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd clean install -DskipTests
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd clean install -DskipTests
 ```
 
 ### 2. 运行测试
 
 ```bash
 # 运行所有测试
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd test
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd test
 
 # 运行特定测试
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd test -Dtest=MyTestClass
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd test -Dtest=MyTestClass
 ```
 
 ### 3. 打包应用
 
 ```bash
 # 打包为 JAR
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd package
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd package
 
 # 打包为 WAR
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd package -Pwar
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd package -Pwar
 ```
 
 ### 4. 部署到仓库
 
 ```bash
 # 部署到本地仓库
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd deploy
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd deploy
 
 # 部署到远程仓库
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd deploy -DaltDeploymentRepository=remote-repo::default::https://your-repo.com
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd deploy -DaltDeploymentRepository=remote-repo::default::https://your-repo.com
 ```
 
 ## 🔧 高级用法
@@ -114,7 +114,7 @@ docker run --rm \
   -v $(pwd):/workspace \
   -v ~/.m2/settings.xml:/root/.m2/settings.xml \
   -w /workspace \
-  power4j/mvnd:1.0.2-temurin-17-jdk-jammy \
+  power4j/mvnd:1.0.4-temurin-17-jdk-jammy \
   mvnd clean install -s /root/.m2/settings.xml
 ```
 
@@ -122,20 +122,20 @@ docker run --rm \
 
 ```bash
 # 使用特定 profile
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd clean install -Pproduction
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd clean install -Pproduction
 
 # 使用多个 profile
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd clean install -Pdev,test
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd clean install -Pdev,test
 ```
 
 ### 设置 JVM 参数
 
 ```bash
 # 设置内存限制
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd clean install -Dmvnd.jvmargs="-Xmx2g -Xms1g"
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd clean install -Dmvnd.jvmargs="-Xmx2g -Xms1g"
 
 # 设置系统属性
-docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd clean install -Dspring.profiles.active=prod
+docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd clean install -Dspring.profiles.active=prod
 ```
 
 ## 🐳 Docker Compose 集成
@@ -146,7 +146,7 @@ docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17
 version: '3.8'
 services:
   mvnd:
-    image: power4j/mvnd:1.0.2-temurin-17-jdk-jammy
+    image: power4j/mvnd:1.0.4-temurin-17-jdk-jammy
     volumes:
       - .:/workspace
       - ~/.m2:/root/.m2
@@ -173,7 +173,7 @@ docker-compose up
 2. **Maven 仓库缓存**
    ```bash
    # 清理 Maven 本地仓库
-   docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd clean
+   docker run --rm -v $(pwd):/workspace -w /workspace power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd clean
    ```
 
 3. **网络问题**
@@ -182,17 +182,17 @@ docker-compose up
    docker run --rm -v $(pwd):/workspace -w /workspace \
      -e HTTP_PROXY=http://proxy:port \
      -e HTTPS_PROXY=http://proxy:port \
-     power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd clean install
+     power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd clean install
    ```
 
 ### 查看版本信息
 
 ```bash
 # 查看 mvnd 版本
-docker run --rm power4j/mvnd:1.0.2-temurin-17-jdk-jammy mvnd --version
+docker run --rm power4j/mvnd:1.0.4-temurin-17-jdk-jammy mvnd --version
 
 # 查看 Java 版本
-docker run --rm power4j/mvnd:1.0.2-temurin-17-jdk-jammy java --version
+docker run --rm power4j/mvnd:1.0.4-temurin-17-jdk-jammy java --version
 ```
 
 ## 📚 相关链接
