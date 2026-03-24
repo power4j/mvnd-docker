@@ -10,44 +10,48 @@ on:
       mvnd_version:
         description: 'mvnd version to use (see releases: https://github.com/apache/maven-mvnd/releases)'
         required: false
-        default: '1.0.2'
+        default: '1.0.5'
         type: string
       tag_version:
         description: 'Image version prefix for testing'
         required: false
         default: 'dev'
         type: string
+      cpu_arch:
+        description: 'target cpu architecture (amd64, aarch64, all)'
+        required: false
+        default: 'all'
+        type: string
 
 jobs:
   # mvnd 2.x use maven 4, jdk17+ is required
   test-temurin-8:
-    if: startsWith(github.event.inputs.mvnd_version || '1.0.2', '1.')
+    if: startsWith(github.event.inputs.mvnd_version || '1.0.5', '1.')
     uses: ./.github/workflows/docker-build.yml
     with:
-      mvnd_version: ${{ github.event.inputs.mvnd_version || '1.0.2' }}
+      mvnd_version: ${{ github.event.inputs.mvnd_version || '1.0.5' }}
       tag_version: ${{ github.event.inputs.tag_version || 'dev' }}
       jdk_type: temurin-8-jdk-jammy
       base_image: eclipse-temurin:8-jdk-jammy
-      platforms: linux/amd64
+      cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
       push_image: false
 
   test-temurin-17:
     uses: ./.github/workflows/docker-build.yml
     with:
-      mvnd_version: ${{ github.event.inputs.mvnd_version || '1.0.2' }}
+      mvnd_version: ${{ github.event.inputs.mvnd_version || '1.0.5' }}
       tag_version: ${{ github.event.inputs.tag_version || 'dev' }}
       jdk_type: temurin-17-jdk-jammy
       base_image: eclipse-temurin:17-jdk-jammy
-      platforms: linux/amd64
+      cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
       push_image: false
 
   test-temurin-22:
     uses: ./.github/workflows/docker-build.yml
     with:
-      mvnd_version: ${{ github.event.inputs.mvnd_version || '1.0.2' }}
+      mvnd_version: ${{ github.event.inputs.mvnd_version || '1.0.5' }}
       tag_version: ${{ github.event.inputs.tag_version || 'dev' }}
       jdk_type: temurin-22-jdk-jammy
       base_image: eclipse-temurin:22-jdk-jammy
-      platforms: linux/amd64
+      cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
       push_image: false
-

@@ -6,11 +6,15 @@ on:
       mvnd_version:
         description: 'mvnd version to use (see releases: https://github.com/apache/maven-mvnd/releases)'
         required: true
-        default: '1.0.2'
+        default: '1.0.5'
       tag-version:
         description: 'Image version prefix,use mvnd_version by default'
         required: false
         default: ''
+      cpu_arch:
+        description: 'target cpu architecture (amd64, aarch64, all)'
+        required: false
+        default: 'all'
       all_jdk:
         description: 'build all'
         required: false
@@ -51,8 +55,7 @@ jobs:
       tag_version: ${{ github.event.inputs.tag-version || github.event.inputs.mvnd_version }}
       jdk_type: temurin-8-jdk-jammy
       base_image: eclipse-temurin:8-jdk-jammy
-      # base image not supports darwin
-      platforms: linux/amd64
+      cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
       push_image: true
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -66,8 +69,7 @@ jobs:
       tag_version: ${{ github.event.inputs.tag-version || github.event.inputs.mvnd_version }}
       jdk_type: temurin-11-jdk-jammy
       base_image: eclipse-temurin:11-jdk-jammy
-      # base image not supports darwin
-      platforms: linux/amd64
+      cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
       push_image: true
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -81,8 +83,7 @@ jobs:
       tag_version: ${{ github.event.inputs.tag-version || github.event.inputs.mvnd_version }}
       jdk_type: temurin-17-jdk-jammy
       base_image: eclipse-temurin:17-jdk-jammy
-      # base image not supports darwin
-      platforms: linux/amd64
+      cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
       push_image: true
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -96,8 +97,7 @@ jobs:
       tag_version: ${{ github.event.inputs.tag-version || github.event.inputs.mvnd_version }}
       jdk_type: temurin-21-jdk-jammy
       base_image: eclipse-temurin:21-jdk-jammy
-      # base image not supports darwin
-      platforms: linux/amd64
+      cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
       push_image: true
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -111,8 +111,7 @@ jobs:
       tag_version: ${{ github.event.inputs.tag-version || github.event.inputs.mvnd_version }}
       jdk_type: temurin-22-jdk-jammy
       base_image: eclipse-temurin:22-jdk-jammy
-      # base image not supports darwin
-      platforms: linux/amd64
+      cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
       push_image: true
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}

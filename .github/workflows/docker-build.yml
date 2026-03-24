@@ -12,20 +12,20 @@ on:
       jdk_type:
         required: true
         type: string
-        description: 'JDK type (e.g., temurin-8-jdk-jammy, temurin-17-jdk-jammy)'
+        description: "JDK 类型，例如 temurin-17-jdk-jammy"
       base_image:
         required: true
         type: string
-        description: 'Base Docker image (e.g., eclipse-temurin:8-jdk-jammy)'
-      platforms:
+        description: "基础镜像，例如 eclipse-temurin:17-jdk-jammy"
+      cpu_arch:
         required: true
         type: string
-        description: 'Comma-separated list of platforms (e.g., linux/amd64,darwin/amd64,darwin/arm64)'
+        description: "目标架构，可选 amd64、aarch64、all"
       push_image:
         required: false
         type: boolean
         default: false
-        description: 'Whether to push the image to Docker Hub'
+        description: "是否推送镜像到 Docker Hub"
     secrets:
       DOCKERHUB_USERNAME:
         required: false
@@ -35,131 +35,260 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BUILD_LOG_DIR: build-logs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Prepare Build Args 
-        id: build_args
-        run: |
-          MVND_VERSION="${{ inputs.mvnd_version }}"
-          TAG_VERSION="${{ inputs.tag_version }}"
-          
-          echo "Building for JDK: ${{ inputs.jdk_type }}"
-          echo "Base image: ${{ inputs.base_image }}"
-          echo "Platforms: ${{ inputs.platforms }}"
-          echo "Tag version: $TAG_VERSION"
-          
-          # Generate complete Docker tags
-          PUSH_TAG="power4j/mvnd:$TAG_VERSION-${{ inputs.jdk_type }}"
-          TESTING_TAG="power4j/mvnd:$TAG_VERSION-${{ inputs.jdk_type }}-test"
-          
-          echo "push_tag=$PUSH_TAG" >> $GITHUB_OUTPUT
-          echo "testing_tag=$TESTING_TAG" >> $GITHUB_OUTPUT
-          
-          echo "Generated Docker tags:"
-          echo "Push tag: $PUSH_TAG"
-          echo "Testing tag: $TESTING_TAG"
-          
-          # Generate URLs for each platform (mvnd doesn't support linux/arm64)
-          LINUX_AMD64_URL="https://github.com/apache/maven-mvnd/releases/download/$MVND_VERSION/maven-mvnd-$MVND_VERSION-linux-amd64.zip"
-          DARWIN_AMD64_URL="https://github.com/apache/maven-mvnd/releases/download/$MVND_VERSION/maven-mvnd-$MVND_VERSION-darwin-amd64.zip"
-          DARWIN_ARM64_URL="https://github.com/apache/maven-mvnd/releases/download/$MVND_VERSION/maven-mvnd-$MVND_VERSION-darwin-aarch64.zip"
-          
-          echo "linux_amd64_url=$LINUX_AMD64_URL" >> $GITHUB_OUTPUT
-          echo "darwin_amd64_url=$DARWIN_AMD64_URL" >> $GITHUB_OUTPUT
-          echo "darwin_arm64_url=$DARWIN_ARM64_URL" >> $GITHUB_OUTPUT
-          
-          echo "Generated URLs:"
-          echo "Linux AMD64: $LINUX_AMD64_URL"
-          echo "Darwin AMD64: $DARWIN_AMD64_URL"
-          echo "Darwin ARM64: $DARWIN_ARM64_URL"
+      - name: Prepare build log directory
+        run: mkdir -p "$BUILD_LOG_DIR"
 
-      - name: Validate URLs
+      - name: Probe arm64 emulation
+        id: arm64_probe
+        continue-on-error: true
         run: |
-          echo "Testing URL accessibility..."
-          
-          LINUX_AMD64_URL="${{ steps.build_args.outputs.linux_amd64_url }}"
-          DARWIN_AMD64_URL="${{ steps.build_args.outputs.darwin_amd64_url }}"
-          DARWIN_ARM64_URL="${{ steps.build_args.outputs.darwin_arm64_url }}"
-          
-          if curl -f -I "$LINUX_AMD64_URL" > /dev/null 2>&1; then
-            echo "✅ Linux AMD64 URL is accessible"
-          else
-            echo "❌ Linux AMD64 URL is not accessible"
-            echo "Trying to get more info..."
-            curl -v "$LINUX_AMD64_URL" 2>&1 | head -20
-          fi
-          
-          if curl -f -I "$DARWIN_AMD64_URL" > /dev/null 2>&1; then
-            echo "✅ Darwin AMD64 URL is accessible"
-          else
-            echo "❌ Darwin AMD64 URL is not accessible"
-            echo "Trying to get more info..."
-            curl -v "$DARWIN_AMD64_URL" 2>&1 | head -20
-          fi
-          
-          if curl -f -I "$DARWIN_ARM64_URL" > /dev/null 2>&1; then
-            echo "✅ Darwin ARM64 URL is accessible"
-          else
-            echo "❌ Darwin ARM64 URL is not accessible"
-            echo "Trying to get more info..."
-            curl -v "$DARWIN_ARM64_URL" 2>&1 | head -20
+          set -euo pipefail
+          docker run --rm --platform linux/arm64 alpine:3.20 uname -m | tee "$BUILD_LOG_DIR/arm64-probe.log"
+
+      - name: Detect mvnd assets
+        id: mvnd_assets
+        run: |
+          set -euo pipefail
+
+          api_url="https://api.github.com/repos/apache/maven-mvnd/releases/tags/${{ inputs.mvnd_version }}"
+          output_file="$BUILD_LOG_DIR/mvnd-assets.json"
+
+          curl -fsSL "$api_url" > "$output_file"
+
+          has_mvnd_amd64=false
+          has_mvnd_arm64=false
+
+          if jq -e --arg name "maven-mvnd-${{ inputs.mvnd_version }}-linux-amd64.zip" '.assets[]? | select(.name == $name)' "$output_file" > /dev/null; then
+            has_mvnd_amd64=true
           fi
 
-      - name: Build and export to Docker for testing
-        uses: docker/build-push-action@v7
+          if jq -e --arg name "maven-mvnd-${{ inputs.mvnd_version }}-linux-aarch64.zip" '.assets[]? | select(.name == $name)' "$output_file" > /dev/null; then
+            has_mvnd_arm64=true
+          fi
+
+          echo "has_mvnd_amd64=$has_mvnd_amd64" >> "$GITHUB_OUTPUT"
+          echo "has_mvnd_arm64=$has_mvnd_arm64" >> "$GITHUB_OUTPUT"
+
+      - name: Detect base image platforms
+        id: base_platforms
+        run: |
+          set -euo pipefail
+
+          output_file="$BUILD_LOG_DIR/base-image-platforms.json"
+          docker buildx imagetools inspect --raw "${{ inputs.base_image }}" > "$output_file"
+
+          platforms="$(
+            jq -r '
+              if has("manifests") then
+                .manifests[]
+                | select(.platform.os != null and .platform.architecture != null)
+                | "\(.platform.os)/\(.platform.architecture)"
+              elif has("os") and has("architecture") then
+                "\(.os)/\(.architecture)"
+              else
+                empty
+              end
+            ' "$output_file" | sort -u
+          )"
+
+          printf '%s\n' "$platforms" > "$BUILD_LOG_DIR/base-image-platforms.txt"
+
+          has_base_amd64=false
+          has_base_arm64=false
+
+          if printf '%s\n' "$platforms" | grep -qx 'linux/amd64'; then
+            has_base_amd64=true
+          fi
+
+          if printf '%s\n' "$platforms" | grep -qx 'linux/arm64'; then
+            has_base_arm64=true
+          fi
+
+          echo "has_base_amd64=$has_base_amd64" >> "$GITHUB_OUTPUT"
+          echo "has_base_arm64=$has_base_arm64" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve target platforms
+        id: resolved
+        run: |
+          set -euo pipefail
+
+          while IFS='=' read -r key value; do
+            echo "$key=$value" >> "$GITHUB_OUTPUT"
+          done < <(
+            ./scripts/resolve-target-platforms.sh \
+              "${{ inputs.cpu_arch }}" \
+              "${{ steps.mvnd_assets.outputs.has_mvnd_amd64 }}" \
+              "${{ steps.mvnd_assets.outputs.has_mvnd_arm64 }}" \
+              "${{ steps.base_platforms.outputs.has_base_amd64 }}" \
+              "${{ steps.base_platforms.outputs.has_base_arm64 }}"
+          )
+
+      - name: Validate arm64 test environment
+        if: contains(steps.resolved.outputs.resolved_platforms, 'linux/arm64')
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ steps.arm64_probe.outcome }}" != "success" ]]; then
+            echo "arm64 仿真链路不可用，无法执行目标架构 smoke test" >&2
+            exit 1
+          fi
+
+      - name: Report skip reason
+        if: steps.resolved.outputs.should_skip == 'true'
+        run: |
+          echo "当前 JDK 任务无可构建平台，跳过原因：${{ steps.resolved.outputs.skip_reason }}"
+
+      - name: Build and smoke test per architecture
+        if: steps.resolved.outputs.should_skip != 'true'
+        run: |
+          set -euo pipefail
+
+          IFS=',' read -r -a platforms <<< "${{ steps.resolved.outputs.resolved_platforms }}"
+          IFS=',' read -r -a arches <<< "${{ steps.resolved.outputs.resolved_arches }}"
+
+          for index in "${!platforms[@]}"; do
+            platform="${platforms[$index]}"
+            arch="${arches[$index]}"
+            tag="power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}-test-${arch}"
+
+            docker buildx build \
+              --platform "$platform" \
+              --load \
+              --tag "$tag" \
+              --build-arg MVND_VERSION=${{ inputs.mvnd_version }} \
+              --build-arg BASE_IMAGE=${{ inputs.base_image }} \
+              . 2>&1 | tee "$BUILD_LOG_DIR/build-${arch}.log"
+
+            inspected_platform="$(docker image inspect "$tag" --format '{{.Os}}/{{.Architecture}}')"
+            if [[ "$inspected_platform" != "$platform" ]]; then
+              echo "镜像平台不匹配：期望 $platform，实际 $inspected_platform" >&2
+              exit 1
+            fi
+
+            ./scripts/smoke-test-image.sh "$tag" "$platform" 2>&1 | tee "$BUILD_LOG_DIR/smoke-${arch}.log"
+          done
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          context: .
-          file: ./Dockerfile
-          load: true
-          tags: ${{ steps.build_args.outputs.testing_tag }}
-          build-args: |
-            MVND_URL_LINUX_AMD64=${{ steps.build_args.outputs.linux_amd64_url }}
-            MVND_URL_DARWIN_AMD64=${{ steps.build_args.outputs.darwin_amd64_url }}
-            MVND_URL_DARWIN_ARM64=${{ steps.build_args.outputs.darwin_arm64_url }}
-            BASE_IMAGE=${{ inputs.base_image }}
-
-      - name: Test
-        run: |
-          echo "Testing mvnd image..."
-          
-          docker run --rm ${{ steps.build_args.outputs.testing_tag }} uname -a
-          
-          docker run --rm ${{ steps.build_args.outputs.testing_tag }} java -version
-     
-          docker run --rm ${{ steps.build_args.outputs.testing_tag }} mvnd --version
-     
-          docker run --rm ${{ steps.build_args.outputs.testing_tag }} mvn -v
-
-          docker run --rm ${{ steps.build_args.outputs.testing_tag }} sh -c 'echo "MVND_HOME: $MVND_HOME" && $MVND_HOME/bin/mvnd --version'
-          
-          echo "✅ All tests passed!"
+          name: build-logs-${{ inputs.jdk_type }}
+          path: ${{ env.BUILD_LOG_DIR }}
 
       - name: Login to DockerHub
-        if: inputs.push_image
+        if: inputs.push_image && steps.resolved.outputs.should_skip != 'true'
         uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        if: inputs.push_image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: ${{ inputs.platforms }}
-          push: true
-          tags: ${{ steps.build_args.outputs.push_tag }}
-          build-args: |
-            MVND_URL_LINUX_AMD64=${{ steps.build_args.outputs.linux_amd64_url }}
-            MVND_URL_DARWIN_AMD64=${{ steps.build_args.outputs.darwin_amd64_url }}
-            MVND_URL_DARWIN_ARM64=${{ steps.build_args.outputs.darwin_arm64_url }}
-            BASE_IMAGE=${{ inputs.base_image }} 
+      - name: Push architecture tags
+        id: push_arch
+        if: inputs.push_image && steps.resolved.outputs.should_skip != 'true'
+        run: |
+          set -euo pipefail
+
+          IFS=',' read -r -a platforms <<< "${{ steps.resolved.outputs.resolved_platforms }}"
+          IFS=',' read -r -a arches <<< "${{ steps.resolved.outputs.resolved_arches }}"
+          pushed_tags=()
+
+          for index in "${!platforms[@]}"; do
+            platform="${platforms[$index]}"
+            arch="${arches[$index]}"
+            tag="power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}-${arch}"
+
+            docker buildx build \
+              --platform "$platform" \
+              --push \
+              --tag "$tag" \
+              --build-arg MVND_VERSION=${{ inputs.mvnd_version }} \
+              --build-arg BASE_IMAGE=${{ inputs.base_image }} \
+              . 2>&1 | tee "$BUILD_LOG_DIR/push-${arch}.log"
+
+            pushed_tags+=("$tag")
+          done
+
+          {
+            echo "pushed_arch_tags<<EOF"
+            printf '%s\n' "${pushed_tags[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create main manifest tag
+        id: manifest
+        if: inputs.push_image && steps.resolved.outputs.should_skip != 'true' && inputs.cpu_arch == 'all'
+        run: |
+          set -euo pipefail
+
+          main_tag="power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}"
+          mapfile -t pushed_tags <<< "${{ steps.push_arch.outputs.pushed_arch_tags }}"
+
+          if [[ "${#pushed_tags[@]}" -eq 0 ]]; then
+            echo "没有可用于组装 manifest 的架构镜像" >&2
+            exit 1
+          fi
+
+          docker buildx imagetools create -t "$main_tag" "${pushed_tags[@]}" 2>&1 | tee "$BUILD_LOG_DIR/manifest.log"
+          echo "main_tag=$main_tag" >> "$GITHUB_OUTPUT"
+
+      - name: Verify remote image platforms
+        if: inputs.push_image && steps.resolved.outputs.should_skip != 'true'
+        run: |
+          set -euo pipefail
+
+          extract_platforms() {
+            local image_ref="$1"
+            local output_file="$2"
+
+            docker buildx imagetools inspect --raw "$image_ref" > "$output_file"
+
+            jq -r '
+              if has("manifests") then
+                .manifests[]
+                | select(.platform.os != null and .platform.architecture != null)
+                | "\(.platform.os)/\(.platform.architecture)"
+              elif has("os") and has("architecture") then
+                "\(.os)/\(.architecture)"
+              else
+                empty
+              end
+            ' "$output_file" | sort -u | paste -sd, -
+          }
+
+          IFS=',' read -r -a platforms <<< "${{ steps.resolved.outputs.resolved_platforms }}"
+          IFS=',' read -r -a arches <<< "${{ steps.resolved.outputs.resolved_arches }}"
+
+          for index in "${!platforms[@]}"; do
+            platform="${platforms[$index]}"
+            arch="${arches[$index]}"
+            tag="power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}-${arch}"
+            actual_platforms="$(extract_platforms "$tag" "$BUILD_LOG_DIR/inspect-${arch}.json")"
+
+            if [[ "$actual_platforms" != "$platform" ]]; then
+              echo "远端架构标签平台不匹配：$tag 期望 $platform，实际 $actual_platforms" >&2
+              exit 1
+            fi
+          done
+
+          if [[ "${{ inputs.cpu_arch }}" == "all" ]]; then
+            expected_platforms="$(printf '%s\n' "${platforms[@]}" | sort -u | paste -sd, -)"
+            main_tag="power4j/mvnd:${{ inputs.tag_version }}-${{ inputs.jdk_type }}"
+            actual_platforms="$(extract_platforms "$main_tag" "$BUILD_LOG_DIR/inspect-main.json")"
+
+            if [[ "$actual_platforms" != "$expected_platforms" ]]; then
+              echo "主标签 manifest 平台不匹配：$main_tag 期望 $expected_platforms，实际 $actual_platforms" >&2
+              exit 1
+            fi
+          fi
