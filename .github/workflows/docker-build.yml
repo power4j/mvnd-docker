@@ -251,20 +251,15 @@ jobs:
           extract_platforms() {
             local image_ref="$1"
             local output_file="$2"
+            local inspect_output=""
 
-            docker buildx imagetools inspect --raw "$image_ref" > "$output_file"
+            inspect_output="$(docker buildx imagetools inspect "$image_ref")"
+            printf '%s\n' "$inspect_output" > "$output_file"
 
-            jq -r '
-              if has("manifests") then
-                .manifests[]
-                | select(.platform.os != null and .platform.architecture != null)
-                | "\(.platform.os)/\(.platform.architecture)"
-              elif has("os") and has("architecture") then
-                "\(.os)/\(.architecture)"
-              else
-                empty
-              end
-            ' "$output_file" | sort -u | paste -sd, -
+            printf '%s\n' "$inspect_output" \
+              | sed -n 's/^[[:space:]]*Platform:[[:space:]]*//p' \
+              | sort -u \
+              | paste -sd, -
           }
 
           IFS=',' read -r -a platforms <<< "${{ steps.resolved.outputs.resolved_platforms }}"

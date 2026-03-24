@@ -3,6 +3,8 @@ ARG ALPINE_CN=false
 
 FROM alpine:3.15.0 AS downloader
 
+ARG BASE_IMAGE
+
 LABEL maintainer="https://github.com/power4j/mvnd-docker"
 
 
