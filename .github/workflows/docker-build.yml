@@ -256,10 +256,7 @@ jobs:
             inspect_output="$(docker buildx imagetools inspect "$image_ref")"
             printf '%s\n' "$inspect_output" > "$output_file"
 
-            printf '%s\n' "$inspect_output" \
-              | sed -n 's/^[[:space:]]*Platform:[[:space:]]*//p' \
-              | sort -u \
-              | paste -sd, -
+            printf '%s\n' "$inspect_output" | ./scripts/extract-imagetools-platforms.sh
           }
 
           IFS=',' read -r -a platforms <<< "${{ steps.resolved.outputs.resolved_platforms }}"
