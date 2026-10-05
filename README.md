@@ -220,7 +220,3 @@ Issues and Pull Requests are welcome! 👉 [https://github.com/power4j/mvnd-dock
 ## 📄 License
 
 This project is licensed under the Apache License 2.0. 
-
-## 📄 License
-
-This project is licensed under the Apache License 2.0. 
