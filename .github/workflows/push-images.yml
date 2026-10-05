@@ -45,6 +45,11 @@ on:
         required: false
         type: boolean
         default: false
+      temurin-25-jdk-jammy:
+        description: 'use eclipse-temurin:25-jdk-jammy'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build-temurin-8-jdk-jammy:
@@ -111,6 +116,20 @@ jobs:
       tag_version: ${{ github.event.inputs.tag-version || github.event.inputs.mvnd_version }}
       jdk_type: temurin-22-jdk-jammy
       base_image: eclipse-temurin:22-jdk-jammy
+      cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
+      push_image: true
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-temurin-25-jdk-jammy:
+    if: inputs.all_jdk || inputs.temurin-25-jdk-jammy
+    uses: ./.github/workflows/docker-build.yml
+    with:
+      mvnd_version: ${{ github.event.inputs.mvnd_version }}
+      tag_version: ${{ github.event.inputs.tag-version || github.event.inputs.mvnd_version }}
+      jdk_type: temurin-25-jdk-jammy
+      base_image: eclipse-temurin:25-jdk-jammy
       cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
       push_image: true
     secrets:

@@ -26,6 +26,9 @@ docker pull power4j/mvnd:1.0.5-temurin-21-jdk-jammy
 
 # 使用 JDK 22
 docker pull power4j/mvnd:1.0.5-temurin-22-jdk-jammy
+
+# 使用 JDK 25
+docker pull power4j/mvnd:1.0.5-temurin-25-jdk-jammy
 ```
 
 ### 基本使用
@@ -63,8 +66,9 @@ power4j/mvnd:{mvnd-version}-{jdk-type}-aarch64
 | JDK 8 | `temurin-8-jdk-jammy` | `eclipse-temurin:8-jdk-jammy` | 传统项目兼容 |
 | JDK 11 | `temurin-11-jdk-jammy` | `eclipse-temurin:11-jdk-jammy` | LTS 版本 |
 | JDK 17 | `temurin-17-jdk-jammy` | `eclipse-temurin:17-jdk-jammy` | **推荐** LTS 版本 |
-| JDK 21 | `temurin-21-jdk-jammy` | `eclipse-temurin:21-jdk-jammy` | 最新 LTS 版本 |
-| JDK 22 | `temurin-22-jdk-jammy` | `eclipse-temurin:22-jdk-jammy` | 最新版本 |
+| JDK 21 | `temurin-21-jdk-jammy` | `eclipse-temurin:21-jdk-jammy` | LTS 版本 |
+| JDK 22 | `temurin-22-jdk-jammy` | `eclipse-temurin:22-jdk-jammy` | 非 LTS 版本 |
+| JDK 25 | `temurin-25-jdk-jammy` | `eclipse-temurin:25-jdk-jammy` | 最新 LTS 版本 |
 
 ### 支持的 mvnd 版本
 

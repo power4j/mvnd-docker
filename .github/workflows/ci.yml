@@ -55,3 +55,13 @@ jobs:
       base_image: eclipse-temurin:22-jdk-jammy
       cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
       push_image: false
+
+  test-temurin-25:
+    uses: ./.github/workflows/docker-build.yml
+    with:
+      mvnd_version: ${{ github.event.inputs.mvnd_version || '1.0.5' }}
+      tag_version: ${{ github.event.inputs.tag_version || 'dev' }}
+      jdk_type: temurin-25-jdk-jammy
+      base_image: eclipse-temurin:25-jdk-jammy
+      cpu_arch: ${{ github.event.inputs.cpu_arch || 'all' }}
+      push_image: false
